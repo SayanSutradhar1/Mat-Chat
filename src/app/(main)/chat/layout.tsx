@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMobile } from "@/hooks/mobile.hook";
 import { apiGet } from "@/lib/apiResponse";
+import { decryptMessage } from "@/lib/encryption";
 import {
   Bell,
   Home,
@@ -244,7 +245,7 @@ export default function ChatLayout({ children }: { children: ReactNode }) {
                   </div>
                   <p className="text-sm text-gray-600 truncate">
                     {chat.messages.length > 0
-                      ? chat.messages[chat.messages.length - 1].content
+                      ? decryptMessage(chat.messages[chat.messages.length - 1].content)
                       : "New Message"}
                   </p>
                 </div>
