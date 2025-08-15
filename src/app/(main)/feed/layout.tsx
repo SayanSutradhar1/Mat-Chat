@@ -1,9 +1,7 @@
 import BottomNavbar from "@/components/Shared/BottomNavbar";
 import MobileHeader from "@/components/Shared/MobileHeader";
-import { ReactNode } from "react";
 import dynamic from "next/dynamic";
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
+import { ReactNode } from "react";
 
 const DesktopSidebarLeft = dynamic(
   () => import("@/components/Shared/DesktopSidebarLeft")
@@ -14,7 +12,7 @@ const DesktopSidebarRight = dynamic(
 
 const Feedlayout = async ({ children }: { children: ReactNode }) => {
 
-  const session = await auth()
+  // const session = await auth()
 
   // if(!session?.user){
   //   redirect("/login")

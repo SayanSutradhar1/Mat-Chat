@@ -2,6 +2,7 @@ import { ApiResponse } from "@/interfaces/api.interface";
 import { connectDB } from "@/lib/db.connect";
 import { Chat } from "@/models/chat.model";
 import { UserHandle } from "@/models/user.model";
+import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -57,7 +58,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (userHandle.following.includes(friendUserHandle._id as any)) {
+    if (userHandle.following.includes(friendUserHandle._id as mongoose.Schema.Types.ObjectId)) {
       return NextResponse.json<ApiResponse>(
         {
           success: false,
@@ -70,8 +71,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    userHandle.following.push(friendUserHandle.userId as any);
-    friendUserHandle.followers.push(userHandle.userId as any);
+    userHandle.following.push(friendUserHandle.userId);
+    friendUserHandle.followers.push(userHandle.userId);
 
     const existingChat = await Chat.findOne({
       participants: { $all: [userHandle.userId, friendUserHandle.userId] },
@@ -85,10 +86,10 @@ export async function POST(request: NextRequest) {
         messages: [],
       });
 
-      userHandle.chats = [...(userHandle.chats || []), chat._id as any];
+      userHandle.chats = [...(userHandle.chats || []), chat._id as mongoose.Schema.Types.ObjectId];
       friendUserHandle.chats = [
         ...(friendUserHandle.chats || []),
-        chat._id as any,
+        chat._id as mongoose.Schema.Types.ObjectId,
       ];
       await chat.save();
     }

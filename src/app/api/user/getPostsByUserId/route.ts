@@ -4,9 +4,9 @@ import { Post as PostType } from "@/interfaces/user.interface";
 import { IPosts, Post } from "@/models/posts.model";
 import { UserCredentials } from "@/models/user.model";
 import mongoose from "mongoose";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await auth();
     const email = session?.user?.email;
@@ -68,12 +68,13 @@ export async function GET(request: NextRequest) {
       postId: (post._id as mongoose.Schema.Types.ObjectId).toString(),
       caption: post.caption,
       //   createdAt: post.createdAt,
-      likes: post.likes.map((like: any) => ({
-        userId: like.userId ? like.userId.toString() : "",
-        name: like.name,
-        avatar: like.avatar,
-      })),
-      comments: post.comments.map((comment: any) => ({
+      // likes: post.likes.map((like) => ({
+      //   userId: (like).userId ? like.userId.toString() : "",
+      //   name: like.name,
+      //   avatar: like.avatar,
+      // })),
+      likes : [],
+      comments: post.comments.map((comment) => ({
         userId: (comment.userId as mongoose.Schema.Types.ObjectId).toString(),
         content: comment.content,
         createdAt: comment.createdAt,

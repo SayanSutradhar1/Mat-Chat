@@ -6,7 +6,9 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 
 const SignUpForm = () => {
-  const handleSubmit = (e: FormEvent) => {};
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault()
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">

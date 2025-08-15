@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 export interface User {
   userId: string;
   name: string;
@@ -5,8 +7,8 @@ export interface User {
   avatar: string;
   dateOfBirth: Date | undefined;
   location: string;
-  following: any[];
-  followers: any[];
+  following: mongoose.Schema.Types.ObjectId[];
+  followers: mongoose.Schema.Types.ObjectId[];
   posts?: Post[];
 }
 
@@ -15,7 +17,11 @@ export interface Post {
   userId: string;
   file: string;
   caption: string;
-  likes: any[];
+  likes: {
+    userId : string;
+    name : string
+    avatar : string
+  }[];
   comments: {
     userId: string;
     content: string;

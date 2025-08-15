@@ -1,7 +1,6 @@
 import { auth } from "@/auth";
 import { ApiResponse } from "@/interfaces/api.interface";
 import { connectDB } from "@/lib/db.connect";
-import { decryptMessage } from "@/lib/encryption";
 import { Chat } from "@/models/chat.model";
 import { NextRequest, NextResponse } from "next/server";
 

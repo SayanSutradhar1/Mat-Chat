@@ -34,7 +34,7 @@ interface TypeChats {
     avatar?: string;
   };
   messages: {
-    sender: any;
+    sender: string;
     content: string;
     messageStatus: "sent" | "delivered" | "read";
     time?: Date;
@@ -53,22 +53,22 @@ export default function ChatLayout({ children }: { children: ReactNode }) {
 
   const getAllChats = useCallback(async () => {
     try {
-      const response = await apiGet("/api/user/chats/getAllChats");
+      const response = await apiGet<TypeChats[]>("/api/user/chats/getAllChats");
 
       if (response.success) {
-        setChats(response.data as any);
+        setChats(response.data);
         toast.success("Chats fetched successfully");
       } else {
         toast.error("Failed to fetch chats");
       }
     } catch (error) {
-      toast.error("An error occurred while fetching chats");
+      toast.error((error as Error).message ?? "An error occurred while fetching chats");
     }
   }, []);
 
   useEffect(() => {
     getAllChats();
-  }, []);
+  }, [getAllChats]);
 
   // if (isMobile) return <>{children}</>;
   if(!pathname.endsWith("/chat") && isMobile){

@@ -2,9 +2,9 @@ import { auth } from "@/auth";
 import { ApiResponse } from "@/interfaces/api.interface";
 import { connectDB } from "@/lib/db.connect";
 import { UserCredentials, UserDetails, UserHandle } from "@/models/user.model";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await auth();
 

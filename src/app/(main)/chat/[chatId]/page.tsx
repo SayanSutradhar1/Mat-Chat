@@ -60,7 +60,7 @@ interface ExtendedMessagePayload extends MessagePayload {
   status: MessageStatus;
 }
 
-const page = ({ params }: { params: Promise<{ chatId: string }> }) => {
+const ChatPage = ({ params }: { params: Promise<{ chatId: string }> }) => {
   const { chatId } = use(params);
 
   const context = useContext(UserContext);
@@ -346,4 +346,4 @@ const page = ({ params }: { params: Promise<{ chatId: string }> }) => {
   );
 };
 
-export default page;
+export default ChatPage;

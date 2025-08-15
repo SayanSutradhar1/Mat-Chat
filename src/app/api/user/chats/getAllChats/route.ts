@@ -4,7 +4,7 @@ import { connectDB } from "@/lib/db.connect";
 import { Chat } from "@/models/chat.model";
 import { UserCredentials, UserDetails } from "@/models/user.model";
 import mongoose from "mongoose";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 interface TypeChats {
   chatId: string;
@@ -17,14 +17,14 @@ interface TypeChats {
     avatar?: string;
   };
   messages: {
-    sender: any
+    sender: string
     content: string;
     messageStatus: "sent" | "delivered" | "read";
     time?: Date;
   }[];
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
 
   try {
 

@@ -14,8 +14,8 @@ const connectDB = async () => {
     });
     connection.isConnected = res.connections[0].readyState;
     console.log("MongoDB Connected...");
-  } catch (error: any) {
-    console.error("Error connecting to MongoDB:", error.message);
+  } catch (error) {
+    console.error("Error connecting to MongoDB:", (error as Error).message);
   }
 };
 

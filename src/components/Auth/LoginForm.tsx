@@ -25,6 +25,8 @@ const LoginForm = () => {
       return;
     }
 
+    setIsLoading(true)
+
     const toastId = toast.loading("Logging in...");
     try {
       const response = await login(loginCredentials);

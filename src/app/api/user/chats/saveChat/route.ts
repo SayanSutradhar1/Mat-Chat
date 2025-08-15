@@ -44,5 +44,12 @@ export async function POST(request: NextRequest) {
       message: "Message saved successfully",
       status: 200,
     });
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+    return NextResponse.json<ApiResponse>({
+      success : false,
+      status : 500,
+      message : "Internal Server Error"
+    })
+  }
 }

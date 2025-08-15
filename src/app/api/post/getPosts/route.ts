@@ -2,9 +2,9 @@ import { ApiResponse } from "@/interfaces/api.interface";
 import { IPosts, Post } from "@/models/posts.model";
 import { UserDetails } from "@/models/user.model";
 import mongoose from "mongoose";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const posts = (await Post.find({})) as IPosts[];
 

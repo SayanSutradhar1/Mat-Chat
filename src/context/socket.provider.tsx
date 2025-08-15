@@ -48,8 +48,8 @@ const SocketProvider = ({ children }: { children: ReactNode }) => {
       console.log("Disconnected from socket");
     };
 
-    const handleConnectError = (error: any) => {
-      console.error("Socket connection error:", error);
+    const handleConnectError = (error:Error) => {
+      console.error("Socket connection error:", error.message);
       setIsConnected(false);
     };
 

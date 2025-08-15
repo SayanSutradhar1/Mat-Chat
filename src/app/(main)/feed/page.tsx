@@ -32,13 +32,15 @@ import { Label } from "@/components/ui/label";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import mongoose from "mongoose";
 // --------------------------------------------
 
 interface Post {
+  postId : string
   file: string;
   caption: string;
   user: string;
-  likes: any[];
+  likes: mongoose.Schema.Types.ObjectId[];
   comments: {
     userId: string;
     content: string;
@@ -46,11 +48,12 @@ interface Post {
   }[];
 }
 
+
+
 export default function Feed() {
   const router = useRouter()
   const [Posts, setPosts] = useState<Post[]>();
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState("all");
 
   // --- Modal state ---
   const [open, setOpen] = useState(false);
@@ -59,7 +62,7 @@ export default function Feed() {
   const [modalPreview, setModalPreview] = useState<string | null>(null);
 
   const fetchPosts = useCallback(async () => {
-    const response = await apiGet<any>("/api/post/getPosts");
+    const response = await apiGet<Post[]>("/api/post/getPosts");
 
     if (response.success) {
       setPosts(response.data);

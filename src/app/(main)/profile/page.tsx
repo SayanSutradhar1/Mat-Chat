@@ -361,7 +361,7 @@ export default function Profile() {
                       <div className="flex items-center space-x-6 text-gray-500">
                         <button className="flex items-center space-x-2 hover:text-red-500 transition-colors">
                           <Heart className="h-4 w-4" />
-                          <span>{post.likes}</span>
+                          <span>{post.likes.length}</span>
                         </button>
                         <button className="flex items-center space-x-2 hover:text-blue-500 transition-colors">
                           <MessageSquare className="h-4 w-4" />

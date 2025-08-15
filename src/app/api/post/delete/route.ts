@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
 
-export async function DELETE(req:NextResponse){
-    
+export async function DELETE(){
+    return NextResponse.json("Api is under progress")
 }
