@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
 
         return {
           postId : (post._id as mongoose.Schema.Types.ObjectId).toString(),
-          picture: post.picture,
+          file: post.file,
           caption: post.caption,
           userId : user?._id,
           user: user?.name,

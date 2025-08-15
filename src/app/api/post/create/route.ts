@@ -1,17 +1,66 @@
-import { ApiResponse, PostCreateBody } from "@/interfaces/api.interface";
+import { auth } from "@/auth";
+import { ApiResponse } from "@/interfaces/api.interface";
 import { connectDB } from "@/lib/db.connect";
+import { uploadToCloudinary } from "@/lib/uploadToCloudinary";
 import { Post } from "@/models/posts.model";
-import { UserHandle } from "@/models/user.model";
+import { UserCredentials, UserHandle } from "@/models/user.model";
 import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-  const { userId, caption, picture } = (await req.json()) as PostCreateBody;
 
   try {
+    const session = await auth();
+
+    const email = session?.user?.email;
+
+    if (!session?.user || !email) {
+      return NextResponse.json<ApiResponse>(
+        {
+          success: false,
+          status: 401,
+          message: "Unauthorized",
+        },
+        {
+          status: 401,
+        }
+      );
+    }
+
+    const formData = await req.formData();
+
+    const userCredentials = await UserCredentials.findOne({
+      email,
+    });
+
+    if (!userCredentials) {
+      return NextResponse.json<ApiResponse>(
+        {
+          success: false,
+          status: 404,
+          message: "No user found",
+        },
+        {
+          status: 404,
+        }
+      );
+    }
+
+    const userId = userCredentials.userId
+    const file = formData.get("file") as File
+    const caption = formData.get("caption") ?? "" as string
+
+    if(!file){
+      return NextResponse.json<ApiResponse>({
+        success : false,
+        status : 400,
+        message : "No file Selected"
+      })
+    }
+
     await connectDB();
     const user = await UserHandle.findOne({
-      userId
+      userId,
     }).select("posts");
 
     if (!user) {
@@ -27,9 +76,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const arrayBuffer = await file.arrayBuffer()
+    const buffer = Buffer.from(arrayBuffer)
+
+    const result = await uploadToCloudinary(buffer,"auto","test")
+
     const post = new Post({
       userId,
-      picture,
+      file : result?.secure_url,
       caption,
     });
 

@@ -6,27 +6,36 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
-import UserContext from "@/context/user.context";
-import { ApiResponse } from "@/interfaces/api.interface";
-import { apiGet } from "@/lib/apiResponse";
-import axios from "axios";
+import { apiGet, apiPost } from "@/lib/apiResponse";
 import {
   Bookmark,
   Filter,
   Heart,
-  ImageIcon,
   MessageCircle,
   MoreHorizontal,
   Search,
   Send,
   Share,
-  Smile,
-  Video,
 } from "lucide-react";
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+
+// --- Add these imports for Shadcn Dialog ---
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+// --------------------------------------------
 
 interface Post {
-  picture: string;
+  file: string;
   caption: string;
   user: string;
   likes: any[];
@@ -38,15 +47,19 @@ interface Post {
 }
 
 export default function Feed() {
-  const context = useContext(UserContext);
-
+  const router = useRouter()
   const [Posts, setPosts] = useState<Post[]>();
-  const [newPost, setNewPost] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
 
+  // --- Modal state ---
+  const [open, setOpen] = useState(false);
+  const [caption, setCaption] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [modalPreview, setModalPreview] = useState<string | null>(null);
+
   const fetchPosts = useCallback(async () => {
-    const response = await apiGet<any>("/api/post/getPosts")
+    const response = await apiGet<any>("/api/post/getPosts");
 
     if (response.success) {
       setPosts(response.data);
@@ -56,6 +69,48 @@ export default function Feed() {
   useEffect(() => {
     fetchPosts();
   }, [fetchPosts]);
+
+  // --- Modal handlers ---
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    console.log(file);
+    
+    setFile(file || null);
+    if (file) {
+      setModalPreview(URL.createObjectURL(file));
+    } else {
+      setModalPreview(null);
+    }
+  };
+
+  const handleCreatePost = async () => {
+    const formData = new FormData();
+
+    formData.append("file", file as File);
+    formData.append("caption", caption as string);
+
+    const toastId = toast.loading("Uploading...");
+
+    // TODO: Implement post creation logic (API call)
+
+    try {
+      const response = await apiPost("/api/post/create", formData);
+      if (response.success) {
+        toast.success(response.message);
+      } else {
+        toast.error(response.message);
+      }
+    } catch (error) {
+      toast.error((error as Error).message);
+    } finally {
+      toast.dismiss(toastId);
+      setOpen(false);
+      setCaption("");
+      setFile(null);
+      setModalPreview(null);
+      router.refresh()
+    }
+  };
 
   return (
     <div className="flex-1 max-w-2xl mx-auto relative px-2 sm:px-0">
@@ -98,7 +153,7 @@ export default function Feed() {
 
       <ScrollArea className="h-[calc(100vh-180px)] lg:h-[calc(100vh-160px)]">
         {/* Filters */}
-        <div className="bg-white border-b border-gray-200 p-2 sm:p-4">
+        {/* <div className="bg-white border-b border-gray-200 p-2 sm:p-4">
           <div className="flex space-x-1 overflow-x-auto scrollbar-hide">
             {["all", "post", "video", "news", "design"].map((filter) => (
               <Button
@@ -116,71 +171,95 @@ export default function Feed() {
               </Button>
             ))}
           </div>
+        </div> */}
+
+        {/* --- New Post Button (replaces old post box) --- */}
+        <div className="bg-white border-b border-gray-200 p-2 sm:p-4 flex justify-end">
+          <Button
+            className="bg-purple-500 hover:bg-purple-600 rounded-full px-6"
+            onClick={() => setOpen(true)}
+          >
+            <Send className="h-4 w-4 mr-1" />
+            New Post
+          </Button>
         </div>
 
-        {/* New Post Box */}
-        <div className="bg-white border-b border-gray-200 p-2 sm:p-4">
-          <div className="flex space-x-3">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src="/placeholder.svg?height=40&width=40" />
-              <AvatarFallback>
-                {context?.user?.name?.[0] ?? "U"}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-              <Textarea
-                placeholder="What's on your mind?"
-                value={newPost}
-                onChange={(e) => setNewPost(e.target.value)}
-                className="min-h-[60px] resize-none border-none shadow-none focus-visible:ring-0 p-0 rounded-xl bg-gray-50"
-              />
-              <div className="flex items-center justify-between mt-2">
-                <div className="flex items-center space-x-2">
-                  <Button variant="ghost" size="sm" className="rounded-full">
-                    <ImageIcon className="h-4 w-4 mr-1" />
-                    <span className="hidden sm:inline">Photo</span>
-                  </Button>
-                  <Button variant="ghost" size="sm" className="rounded-full">
-                    <Video className="h-4 w-4 mr-1" />
-                    <span className="hidden sm:inline">Video</span>
-                  </Button>
-                  <Button variant="ghost" size="sm" className="rounded-full">
-                    <Smile className="h-4 w-4 mr-1" />
-                    <span className="hidden sm:inline">Emoji</span>
-                  </Button>
-                </div>
-                <Button
-                  size="sm"
-                  className="bg-purple-500 hover:bg-purple-600 rounded-full px-6"
-                >
-                  <Send className="h-4 w-4 mr-1" />
-                  Post
-                </Button>
+        {/* --- Modal for Creating Post --- */}
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Create a new post</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="file-upload">Image/Video</Label>
+                <Input
+                  id="file-upload"
+                  type="file"
+                  accept="image/*,video/*"
+                  onChange={handleFileChange}
+                />
+                {modalPreview && (
+                  <div className="mt-2">
+                    {file?.type.startsWith("video") ? (
+                      <video
+                        src={modalPreview}
+                        controls
+                        className="w-full h-48 rounded-lg object-cover"
+                      />
+                    ) : (
+                      <Image
+                        src={modalPreview}
+                        alt="Preview"
+                        className="w-full h-48 rounded-lg object-cover"
+                      />
+                    )}
+                  </div>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="caption">Caption</Label>
+                <Textarea
+                  id="caption"
+                  placeholder="What's on your mind?"
+                  value={caption}
+                  onChange={(e) => setCaption(e.target.value)}
+                  className="min-h-[100px] resize-none mt-2"
+                />
               </div>
             </div>
-          </div>
-        </div>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="ghost">Cancel</Button>
+              </DialogClose>
+              <Button
+                className="bg-purple-500 hover:bg-purple-600"
+                onClick={handleCreatePost}
+                disabled={!caption && !file}
+              >
+                Post
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Posts List */}
         <div className="space-y-4 py-2">
           {Posts?.map((post, i) => (
-            <Card
-              key={i}
-              className="rounded-xl border shadow-sm bg-white"
-            >
+            <Card key={i} className="rounded-xl border shadow-sm bg-white">
               <CardContent className="p-4">
                 {/* Post Header */}
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center space-x-3">
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src={post.picture || "/placeholder.svg"} />
-                      <AvatarFallback>
-                        {post.user?.[0] ?? "U"}
-                      </AvatarFallback>
+                      <AvatarImage src={post.file || "/placeholder.svg"} />
+                      <AvatarFallback>{post.user?.[0] ?? "U"}</AvatarFallback>
                     </Avatar>
                     <div>
                       <div className="flex items-center space-x-2">
-                        <h3 className="font-semibold text-sm text-purple-700">{post.user}</h3>
+                        <h3 className="font-semibold text-sm text-purple-700">
+                          {post.user}
+                        </h3>
                       </div>
                       <div className="flex items-center space-x-2 text-xs text-gray-500">
                         <span>{post.user}</span>
@@ -202,12 +281,14 @@ export default function Feed() {
                 </div>
 
                 {/* Post Media */}
-                {post.picture && (
+                {post.file && (
                   <div className="mb-3">
-                    <img
-                      src={post.picture}
+                    <Image
+                      src={post.file}
+                      width={1000}
+                      height={1000}
                       alt="Post media"
-                      className="w-full h-48 object-cover rounded-lg"
+                      className="h-96 w-auto object-cover rounded-lg"
                     />
                   </div>
                 )}
@@ -235,7 +316,9 @@ export default function Feed() {
             </Card>
           ))}
           {(!Posts || Posts.length === 0) && (
-            <div className="text-center text-gray-400 py-8">No posts found.</div>
+            <div className="text-center text-gray-400 py-8">
+              No posts found.
+            </div>
           )}
         </div>
       </ScrollArea>

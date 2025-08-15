@@ -2,7 +2,7 @@ import mongoose, { Document } from "mongoose";
 
 export interface IPosts extends Document {
   userId: mongoose.Schema.Types.ObjectId;
-  picture?: string;
+  file?: string;
   caption: string;
   likes: mongoose.Schema.Types.ObjectId[];
   comments: {
@@ -19,7 +19,7 @@ const postSchema = new mongoose.Schema<IPosts>(
       ref: "UserDetails",
       required: true,
     },
-    picture: { type: String, default: "" },
+    file: { type: String, default: "" },
     caption: { type: String, required: true },
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "UserHandle" }],
     comments: [

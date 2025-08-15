@@ -52,7 +52,7 @@ interface ChatDetails {
 }
 
 // Message status type
-type MessageStatus = "pending" | "sent" | "delivered" | "read";
+type MessageStatus = "pending" | "sent" | "read";
 
 // Extended message interface with status
 interface ExtendedMessagePayload extends MessagePayload {
@@ -206,8 +206,6 @@ const page = ({ params }: { params: Promise<{ chatId: string }> }) => {
         return <Clock className={`${iconClass} text-gray-400 animate-pulse`} />;
       case "sent":
         return <Check className={`${iconClass} text-gray-400`} />;
-      case "delivered":
-        return <CheckCheck className={`${iconClass} text-gray-400`} />;
       case "read":
         return <CheckCheck className={`${iconClass} text-blue-500`} />;
       default:

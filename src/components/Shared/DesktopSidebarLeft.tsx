@@ -1,7 +1,6 @@
+import { Bell, Home, MessageCircle, User } from "lucide-react";
 import Link from "next/link";
-import React from "react";
 import { Button } from "../ui/button";
-import { Home, MessageCircle, Settings, User } from "lucide-react";
 
 const DesktopSidebarLeft = () => {
   return (
@@ -36,8 +35,8 @@ const DesktopSidebarLeft = () => {
             </Button>
           </Link>
           <Button variant="ghost" className="w-full justify-start">
-            <Settings className="h-4 w-4 mr-3" />
-            Settings
+            <Bell className="h-4 w-4 mr-3" />
+            Notifications
           </Button>
         </nav>
       </div>

@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
         content: comment.content,
         createdAt: comment.createdAt,
       })),
-      picture: post.picture ?? "",
+      file: post.file ?? "",
       userId: (post.userId as mongoose.Schema.Types.ObjectId).toString(),
     }));
 
