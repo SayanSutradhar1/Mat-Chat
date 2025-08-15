@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useMobile } from "@/hooks/mobile.hook";
+import { useMobile } from "@/hooks/useMobile";
 import { apiGet } from "@/lib/apiResponse";
 import { decryptMessage } from "@/lib/encryption";
 import {
