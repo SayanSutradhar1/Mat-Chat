@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    const posts = (await Post.find({})) as IPosts[];
+    const posts = (await Post.find({}).select("+createdAt").sort({_id:-1})) as IPosts[];
 
     const data = await Promise.all(
       posts.map(async (post) => {
@@ -17,11 +17,13 @@ export async function GET() {
         return {
           postId : (post._id as mongoose.Schema.Types.ObjectId).toString(),
           file: post.file,
+          avatar:user?.avatar,
           caption: post.caption,
           userId : user?._id,
           user: user?.name,
           likes: post.likes,
           comments: post.comments,
+          createdAt : post.createdAt
         };
       })
     );

@@ -1,23 +1,14 @@
 "use client";
 
+import BottomNavbar from "@/components/Shared/BottomNavbar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMobile } from "@/hooks/useMobile";
 import { apiGet } from "@/lib/apiResponse";
 import { decryptMessage } from "@/lib/encryption";
-import {
-  Bell,
-  Home,
-  MessageCircle,
-  Plus,
-  Search,
-  Settings,
-  User,
-  Users,
-} from "lucide-react";
+import { Bell, Newspaper, Search, User, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ReactNode, useCallback, useEffect, useState } from "react";
@@ -62,7 +53,9 @@ export default function ChatLayout({ children }: { children: ReactNode }) {
         toast.error("Failed to fetch chats");
       }
     } catch (error) {
-      toast.error((error as Error).message ?? "An error occurred while fetching chats");
+      toast.error(
+        (error as Error).message ?? "An error occurred while fetching chats"
+      );
     }
   }, []);
 
@@ -71,8 +64,8 @@ export default function ChatLayout({ children }: { children: ReactNode }) {
   }, [getAllChats]);
 
   // if (isMobile) return <>{children}</>;
-  if(!pathname.endsWith("/chat") && isMobile){
-    return <>{children}</>
+  if (!pathname.endsWith("/chat") && isMobile) {
+    return <>{children}</>;
   }
 
   return (
@@ -83,15 +76,12 @@ export default function ChatLayout({ children }: { children: ReactNode }) {
         <div className="bg-white border-b border-gray-200 p-4">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-              ConnectHub
+              Connectify
             </h1>
             <div className="flex items-center space-x-2">
-              <Button variant="ghost" size="sm">
-                <Bell className="h-4 w-4" />
-              </Button>
-              <Link href="/profile">
+              <Link href="/notifications">
                 <Button variant="ghost" size="sm">
-                  <User className="h-4 w-4" />
+                  <Bell className="h-4 w-4" />
                 </Button>
               </Link>
             </div>
@@ -114,12 +104,17 @@ export default function ChatLayout({ children }: { children: ReactNode }) {
         {/* Mobile Chat List */}
         <ScrollArea className="flex-1">
           <div className="p-2">
-            {Chats?.map((chat, i) => (
+            {Chats?.filter((c) => {
+              const friend = c.sender;
+              return friend?.name
+                .toLowerCase()
+                .startsWith(searchQuery.toLowerCase());
+            }).map((chat) => (
               <Link
                 href={`/chat/${chat.chatId}`}
                 key={chat.chatId}
                 className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors ${
-                  i.toString() === chat.chatId
+                  pathname === `/chat/${chat.chatId}`
                     ? "bg-purple-50 border border-purple-200"
                     : "hover:bg-gray-50"
                 }`}
@@ -151,12 +146,16 @@ export default function ChatLayout({ children }: { children: ReactNode }) {
                     </span>
                   </div>
                   <p className="text-sm text-gray-600 truncate">
-                    {chat.messages.length > 0
-                      ? chat.messages[chat.messages.length - 1].content
-                      : "New Message"}
+                    {chat.messages.length > 0 ? (
+                      decryptMessage(
+                        chat.messages[chat.messages.length - 1].content
+                      )
+                    ) : (
+                      <span className="text-purple-500">Send Hii</span>
+                    )}
                   </p>
                 </div>
-                {chat.messages.length > 0 && (
+                {/* {chat.messages.length > 0 && (
                   <Badge className="bg-purple-500 text-white text-xs">
                     {
                       chat.messages.filter(
@@ -164,7 +163,7 @@ export default function ChatLayout({ children }: { children: ReactNode }) {
                       ).length
                     }
                   </Badge>
-                )}
+                )} */}
               </Link>
             ))}
           </div>
@@ -176,19 +175,18 @@ export default function ChatLayout({ children }: { children: ReactNode }) {
         {/* Header */}
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-xl font-bold text-gray-800">ConnectHub</h1>
+            <h1 className="text-xl font-bold text-gray-800">Connectify</h1>
             <div className="flex items-center space-x-2">
-              <Button variant="ghost" size="sm">
-                <Bell className="h-4 w-4" />
-              </Button>
+              <Link href={"/feed"}>
+                <Button variant="ghost" size="sm">
+                  <Newspaper className="h-4 w-4" />
+                </Button>
+              </Link>
               <Link href="/profile">
                 <Button variant="ghost" size="sm">
                   <User className="h-4 w-4" />
                 </Button>
               </Link>
-              <Button variant="ghost" size="sm">
-                <Settings className="h-4 w-4" />
-              </Button>
             </div>
           </div>
 
@@ -207,12 +205,17 @@ export default function ChatLayout({ children }: { children: ReactNode }) {
         {/* Desktop Chat List */}
         <ScrollArea className="flex-1">
           <div className="p-2">
-            {Chats?.map((chat, i) => (
+            {Chats?.filter((c) => {
+              const friend = c.sender;
+              return friend?.name
+                .toLowerCase()
+                .startsWith(searchQuery.toLowerCase());
+            })?.map((chat) => (
               <Link
                 href={`/chat/${chat.chatId}`}
                 key={chat.chatId}
                 className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors ${
-                  i.toString() === chat.chatId
+                  pathname === `/chat/${chat.chatId}`
                     ? "bg-purple-50 border border-purple-200"
                     : "hover:bg-gray-50"
                 }`}
@@ -221,6 +224,7 @@ export default function ChatLayout({ children }: { children: ReactNode }) {
                   <Avatar className="h-12 w-12">
                     <AvatarImage
                       src={chat.sender?.avatar || "/placeholder.svg"}
+                      className="object-cover"
                     />
                     <AvatarFallback>{chat.sender?.name[0]}</AvatarFallback>
                   </Avatar>
@@ -239,17 +243,21 @@ export default function ChatLayout({ children }: { children: ReactNode }) {
                       {chat.messages.length > 0
                         ? chat.messages[
                             chat.messages.length - 1
-                          ].time?.getTime()
+                          ].time?.toISOString()
                         : ""}
                     </span>
                   </div>
                   <p className="text-sm text-gray-600 truncate">
-                    {chat.messages.length > 0
-                      ? decryptMessage(chat.messages[chat.messages.length - 1].content)
-                      : "New Message"}
+                    {chat.messages.length > 0 ? (
+                      decryptMessage(
+                        chat.messages[chat.messages.length - 1].content
+                      )
+                    ) : (
+                      <span className="text-purple-500">Send Hii</span>
+                    )}
                   </p>
                 </div>
-                {chat.messages.length > 0 && (
+                {/* {chat.messages.length > 0 && (
                   <Badge className="bg-purple-500 text-white text-xs">
                     {
                       chat.messages.filter(
@@ -257,7 +265,7 @@ export default function ChatLayout({ children }: { children: ReactNode }) {
                       ).length
                     }
                   </Badge>
-                )}
+                )} */}
               </Link>
             ))}
           </div>
@@ -278,48 +286,7 @@ export default function ChatLayout({ children }: { children: ReactNode }) {
       )}
 
       {/* Mobile Bottom Navigation */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-2 z-50">
-        <div className="flex items-center justify-around">
-          <Link href="/feed">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="flex flex-col items-center space-y-1"
-            >
-              <Home className="h-5 w-5" />
-              <span className="text-xs">Feed</span>
-            </Button>
-          </Link>
-          <Link href="/dashboard">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="flex flex-col items-center space-y-1 text-purple-500"
-            >
-              <MessageCircle className="h-5 w-5" />
-              <span className="text-xs">Chat</span>
-            </Button>
-          </Link>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="flex flex-col items-center space-y-1"
-          >
-            <Plus className="h-5 w-5" />
-            <span className="text-xs">Create</span>
-          </Button>
-          <Link href="/profile">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="flex flex-col items-center space-y-1"
-            >
-              <User className="h-5 w-5" />
-              <span className="text-xs">Profile</span>
-            </Button>
-          </Link>
-        </div>
-      </div>
+      <BottomNavbar />
     </div>
   );
 }

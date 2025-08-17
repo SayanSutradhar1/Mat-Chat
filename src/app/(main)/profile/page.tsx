@@ -1,40 +1,10 @@
 "use client";
 
-import { useCallback, useContext, useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import BottomNavbar from "@/components/Shared/BottomNavbar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import {
-  ArrowLeft,
-  Camera,
-  MapPin,
-  Calendar,
-  LinkIcon,
-  MessageCircle,
-  Phone,
-  Video,
-  MoreHorizontal,
-  Heart,
-  MessageSquare,
-  Share,
-  Settings,
-  Shield,
-  Bell,
-  Palette,
-  Home,
-  Plus,
-  User,
-} from "lucide-react";
-import Link from "next/link";
-import { apiGet, apiPost } from "@/lib/apiResponse";
-import { Post } from "@/interfaces/user.interface";
-import toast from "react-hot-toast";
-import UserContext from "@/context/user.context";
-import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogClose,
@@ -44,6 +14,34 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import UserContext from "@/context/user.context";
+import { Post } from "@/interfaces/user.interface";
+import { apiGet, apiPost } from "@/lib/apiResponse";
+import {
+  ArrowLeft,
+  Bell,
+  Calendar,
+  Camera,
+  Heart,
+  LinkIcon,
+  MapPin,
+  MessageCircle,
+  MessageSquare,
+  MoreHorizontal,
+  Palette,
+  Phone,
+  Settings,
+  Share,
+  Shield,
+  Video
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useCallback, useContext, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 export default function Profile() {
   const [activeTab, setActiveTab] = useState("posts");
@@ -549,48 +547,7 @@ export default function Profile() {
         </Tabs>
       </div>
       {/* Mobile Bottom Navigation */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-2 z-50">
-        <div className="flex items-center justify-around">
-          <Link href="/feed">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="flex flex-col items-center space-y-1"
-            >
-              <Home className="h-5 w-5" />
-              <span className="text-xs">Feed</span>
-            </Button>
-          </Link>
-          <Link href="/dashboard">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="flex flex-col items-center space-y-1"
-            >
-              <MessageCircle className="h-5 w-5" />
-              <span className="text-xs">Chat</span>
-            </Button>
-          </Link>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="flex flex-col items-center space-y-1"
-          >
-            <Plus className="h-5 w-5" />
-            <span className="text-xs">Create</span>
-          </Button>
-          <Link href="/profile">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="flex flex-col items-center space-y-1 text-purple-500"
-            >
-              <User className="h-5 w-5" />
-              <span className="text-xs">Profile</span>
-            </Button>
-          </Link>
-        </div>
-      </div>
+      <BottomNavbar/>
     </div>
   );
 }

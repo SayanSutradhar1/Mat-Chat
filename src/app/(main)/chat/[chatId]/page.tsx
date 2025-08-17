@@ -17,13 +17,11 @@ import {
   CheckCheck,
   Clock,
   Mic,
-  MoreVertical,
   Paperclip,
-  Phone,
   Send,
-  Smile,
-  Video,
+  Smile
 } from "lucide-react";
+import Link from "next/link";
 import {
   use,
   useCallback,
@@ -129,15 +127,6 @@ const ChatPage = ({ params }: { params: Promise<{ chatId: string }> }) => {
     });
 
     // Listen for message status updates
-    socket.on(SOCKET_EVENTS.CHAT_MESSAGE_STATUS, (payload: { messageId: string; status: string }) => {
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === payload.messageId
-            ? { ...msg, status: payload.status as MessageStatus }
-            : msg
-        )
-      );
-    });
 
     return () => {
       socket.off(SOCKET_EVENTS.CHAT_MESSAGE_RECEIVE);
@@ -165,29 +154,6 @@ const ChatPage = ({ params }: { params: Promise<{ chatId: string }> }) => {
     setMessage("");
 
     // Simulate status updates (in real app, these would come from server)
-    setTimeout(() => {
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === messageId ? { ...msg, status: "sent" as MessageStatus } : msg
-        )
-      );
-    }, 1000);
-
-    setTimeout(() => {
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === messageId ? { ...msg, status: "delivered" as MessageStatus } : msg
-        )
-      );
-    }, 2000);
-
-    setTimeout(() => {
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === messageId ? { ...msg, status: "read" as MessageStatus } : msg
-        )
-      );
-    }, 3000);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -220,9 +186,11 @@ const ChatPage = ({ params }: { params: Promise<{ chatId: string }> }) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
             {/* Back button for mobile */}
-            <Button variant="ghost" size="sm" className="md:hidden p-1">
+            <Link href={"/chat"}>
+              <Button variant="ghost" size="sm" className="md:hidden p-1">
               <ArrowLeft className="h-4 w-4" />
             </Button>
+            </Link>
             
             <Avatar className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0">
               <AvatarImage
@@ -249,12 +217,12 @@ const ChatPage = ({ params }: { params: Promise<{ chatId: string }> }) => {
                       ?.name}
               </h2>
               <p className="text-xs sm:text-sm text-gray-500 truncate">
-                {true ? "Online" : "Last seen 2 hours ago"}
+                {`Send Message to ${chatDetails?.groupName || chatDetails?.participants.find(p=>p._id!==userId)?.name.split(" ")[0]}`}
               </p>
             </div>
           </div>
           
-          <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
+          {/* <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
             <Button variant="ghost" size="sm" className="p-1 sm:p-2">
               <Phone className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
@@ -264,7 +232,7 @@ const ChatPage = ({ params }: { params: Promise<{ chatId: string }> }) => {
             <Button variant="ghost" size="sm" className="p-1 sm:p-2">
               <MoreVertical className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
-          </div>
+          </div> */}
         </div>
       </div>
 

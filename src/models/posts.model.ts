@@ -10,6 +10,7 @@ export interface IPosts extends Document {
     content: string;
     createdAt: Date;
   }[];
+  createdAt?:Date
 }
 
 const postSchema = new mongoose.Schema<IPosts>(

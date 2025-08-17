@@ -17,7 +17,7 @@ import {
   Send,
   Share,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 
 // --- Add these imports for Shadcn Dialog ---
 import {
@@ -33,10 +33,12 @@ import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import mongoose from "mongoose";
+import UserContext from "@/context/user.context";
 // --------------------------------------------
 
 interface Post {
   postId : string
+  avatar? : string
   file: string;
   caption: string;
   user: string;
@@ -46,6 +48,7 @@ interface Post {
     content: string;
     createdAt: Date;
   }[];
+  createdAt? : Date
 }
 
 
@@ -54,6 +57,9 @@ export default function Feed() {
   const router = useRouter()
   const [Posts, setPosts] = useState<Post[]>();
   const [searchQuery, setSearchQuery] = useState("");
+  const context = useContext(UserContext)
+
+  const name = context?.user?.name
 
   // --- Modal state ---
   const [open, setOpen] = useState(false);
@@ -116,9 +122,9 @@ export default function Feed() {
   };
 
   return (
-    <div className="flex-1 max-w-2xl mx-auto relative px-2 sm:px-0">
+    <div className="flex-1  max-w-3xl mx-auto relative px-2 sm:px-0">
       {/* Desktop Header */}
-      <div className="hidden lg:block bg-white border-b border-gray-200 p-4 sticky top-0 z-40 rounded-t-xl">
+      <div className="hidden lg:block bg-white border-b border-gray-200 p-4 sticky top-0 z-40 rounded-t-xl box-border h-16">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-purple-700">News Feed</h2>
           <div className="flex items-center space-x-2">
@@ -138,46 +144,13 @@ export default function Feed() {
         </div>
       </div>
 
-      {/* Mobile Header */}
-      <div className="lg:hidden p-4 bg-white border-b border-gray-200 sticky top-0 z-40 rounded-t-xl">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-purple-700">Feed</h2>
-          <div className="relative w-2/3">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
-              placeholder="Search..."
-              className="pl-10 rounded-full border-gray-300"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-        </div>
-      </div>
-
-      <ScrollArea className="h-[calc(100vh-180px)] lg:h-[calc(100vh-160px)]">
-        {/* Filters */}
-        {/* <div className="bg-white border-b border-gray-200 p-2 sm:p-4">
-          <div className="flex space-x-1 overflow-x-auto scrollbar-hide">
-            {["all", "post", "video", "news", "design"].map((filter) => (
-              <Button
-                key={filter}
-                variant={activeFilter === filter ? "default" : "ghost"}
-                size="sm"
-                className={`whitespace-nowrap rounded-full px-4 py-1 text-xs ${
-                  activeFilter === filter
-                    ? "bg-purple-500 text-white"
-                    : "text-gray-700 hover:bg-purple-100"
-                }`}
-                onClick={() => setActiveFilter(filter)}
-              >
-                {filter.charAt(0).toUpperCase() + filter.slice(1)}
-              </Button>
-            ))}
-          </div>
-        </div> */}
+      <ScrollArea className="h-[calc(100vh-70px)] lg:h-[calc(100vh-80px)]" style={{
+        scrollbarWidth : "none"
+      }}>
 
         {/* --- New Post Button (replaces old post box) --- */}
-        <div className="bg-white border-b border-gray-200 p-2 sm:p-4 flex justify-end">
+        <div className="bg-white border-b border-gray-200 p-2 sm:p-4 flex justify-between items-center">
+          <div className="text-xl">Welcome <span className="text-purple-500 font-bold">{name?.split(" ")[0]}</span></div>
           <Button
             className="bg-purple-500 hover:bg-purple-600 rounded-full px-6"
             onClick={() => setOpen(true)}
@@ -214,6 +187,8 @@ export default function Feed() {
                       <Image
                         src={modalPreview}
                         alt="Preview"
+                        height={1000}
+                        width={1000}
                         className="w-full h-48 rounded-lg object-cover"
                       />
                     )}
@@ -254,20 +229,18 @@ export default function Feed() {
                 {/* Post Header */}
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center space-x-3">
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={post.file || "/placeholder.svg"} />
+                    <Avatar className="h-14 w-14">
+                      <AvatarImage src={post.avatar || "/placeholder.svg"} className="object-cover" />
                       <AvatarFallback>{post.user?.[0] ?? "U"}</AvatarFallback>
                     </Avatar>
-                    <div>
+                    <div className="text-md">
                       <div className="flex items-center space-x-2">
-                        <h3 className="font-semibold text-sm text-purple-700">
+                        <h3 className="font-semibold text-purple-700">
                           {post.user}
                         </h3>
                       </div>
                       <div className="flex items-center space-x-2 text-xs text-gray-500">
-                        <span>{post.user}</span>
-                        <span>•</span>
-                        <span>{post.caption?.slice(0, 20)}...</span>
+                        <span>{String(post.createdAt)}</span>
                       </div>
                     </div>
                   </div>

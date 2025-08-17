@@ -22,7 +22,7 @@ const Feedlayout = async ({ children }: { children: ReactNode }) => {
     <div className="min-h-screen bg-gray-50">
       <MobileHeader />
 
-      <div className="max-w-7xl mx-auto flex">
+      <div className="w-full mx-auto flex">
         <DesktopSidebarLeft />
 
         {children}
