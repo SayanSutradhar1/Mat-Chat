@@ -6,6 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import Link from "next/link";
 
 const Login = () => {
   return (
@@ -18,6 +19,12 @@ const Login = () => {
         <div className="w-full">
           <LoginForm />
         </div>
+        <p className="text-sm text-gray-500 mt-4 text-center">
+          Don&apos;t have an account?{" "}
+          <Link href="/signup" className="text-purple-600 hover:underline">
+            Sign Up
+          </Link>
+        </p>
       </CardContent>
     </Card>
   );

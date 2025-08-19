@@ -1,12 +1,10 @@
 "use client";
 
 import { useDuration } from "@/hooks/useDuration";
-import { useMobile } from "@/hooks/useMobile";
 import { useSocket } from "@/hooks/useSocket";
 import { apiGet } from "@/lib/apiResponse";
 import mongoose from "mongoose";
-import { redirect } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 interface Notification {
   userId: mongoose.Schema.Types.ObjectId;
@@ -22,11 +20,6 @@ const Page = () => {
 
   const timeAgo = useDuration();
 
-  const isMobile = useMobile()
-
-  if(!isMobile){
-    redirect("/not-found")
-  }
 
   const fetchNotifications = async () => {
     try {
@@ -62,7 +55,7 @@ const Page = () => {
   }, [socket, isConnected, socketId]);
 
   return (
-    <div className="space-y-3 max-h-60 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300">
+    <div className="space-y-3 max-h-60 overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-gray-300">
       {notifications && notifications.length > 0 ? (
         notifications.map((n, i) => (
           <div

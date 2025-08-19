@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Home, MessageCircle, User } from "lucide-react";
+import { Bell, Home, LogOut, MessageCircle, User } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { useEffect, useState } from "react";
@@ -8,8 +8,12 @@ import { useSocket } from "@/hooks/useSocket";
 import mongoose from "mongoose";
 import { apiGet } from "@/lib/apiResponse";
 import { useDuration } from "@/hooks/useDuration";
+import { APP_NAME } from "@/lib/utils";
+import { logout } from "@/actions/logout.action";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
-interface Notification  {
+interface Notification {
   userId: mongoose.Schema.Types.ObjectId;
   header: string;
   content?: string;
@@ -21,33 +25,32 @@ const DesktopSidebarLeft = () => {
 
   const [notifications, setNotifications] = useState<Notification[]>();
 
-  const timeAgo = useDuration()
+  const timeAgo = useDuration();
 
+  const router = useRouter();
 
-  const fetchNotifications = async()=>{
-    
+  const fetchNotifications = async () => {
     try {
-      const response = await apiGet<Notification[]>("/api/user/notification/getAllNotifications")
+      const response = await apiGet<Notification[]>(
+        "/api/user/notification/getAllNotifications"
+      );
 
       console.log(response);
-      
 
-      if(response.success){
-        setNotifications(response.data)
+      if (response.success) {
+        setNotifications(response.data);
       } else {
         console.log(response);
       }
-
     } catch (error) {
       console.log(error);
     }
-  }
+  };
 
-  useEffect(()=>{
+  useEffect(() => {
     console.log(notifications);
-    fetchNotifications()
-    
-  },[])
+    fetchNotifications();
+  }, []);
 
   useEffect(() => {
     if (isConnected) {
@@ -59,14 +62,33 @@ const DesktopSidebarLeft = () => {
     });
   }, [socket, isConnected, socketId]);
 
-  
+
+  const handleLogOut = async()=>{
+    const toastId = toast.loading("Logging out...");
+    try {
+      const response = await logout()
+      console.log(response);
+      
+      if(response.success) {
+        toast.success("Logged out successfully");
+      } else {
+        toast.error("Failed to log out");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("An error occurred while logging out");
+    } finally {
+      toast.dismiss(toastId);
+      router.push("/login");
+    }
+  }
 
   return (
     <div className="hidden lg:block w-80 bg-white border-r border-gray-200 h-screen sticky top-0 ">
       <div className="p-6">
         <Link href="/feed">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-8">
-            Connectify
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-8 cursor-pointer">
+            {APP_NAME}
           </h1>
         </Link>
 
@@ -74,24 +96,28 @@ const DesktopSidebarLeft = () => {
           <Link href="/feed">
             <Button
               variant="default"
-              className="w-full justify-start bg-purple-500 hover:bg-purple-600"
+              className="w-full justify-start bg-purple-500 hover:bg-purple-600 cursor-pointer"
             >
               <Home className="h-4 w-4 mr-3" />
               Feed
             </Button>
           </Link>
           <Link href="/chat">
-            <Button variant="ghost" className="w-full justify-start">
+            <Button variant="ghost" className="w-full justify-start cursor-pointer">
               <MessageCircle className="h-4 w-4 mr-3" />
               Messages
             </Button>
           </Link>
           <Link href="/profile">
-            <Button variant="ghost" className="w-full justify-start">
+            <Button variant="ghost" className="w-full justify-start cursor-pointer">
               <User className="h-4 w-4 mr-3" />
               Profile
             </Button>
           </Link>
+          <Button variant="ghost" className="w-full justify-start" onClick={handleLogOut}>
+            <LogOut className="h-4 w-4 mr-3" />
+            Log Out
+          </Button>
         </nav>
 
         <div className="py-8">
@@ -113,8 +139,12 @@ const DesktopSidebarLeft = () => {
                     </div>
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm text-gray-700 leading-snug">{n.content}</p>
-                    <span className="text-xs text-gray-400">{timeAgo(n.timeStamp)}</span>
+                    <p className="text-sm text-gray-700 leading-snug">
+                      {n.content}
+                    </p>
+                    <span className="text-xs text-gray-400">
+                      {timeAgo(n.timeStamp)}
+                    </span>
                   </div>
                 </div>
               ))

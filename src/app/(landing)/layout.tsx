@@ -2,7 +2,11 @@ import React, { ReactNode } from 'react'
 
 const RootLayout = ({children}:{children:ReactNode}) => {
   return (
-    <div>{children}</div>
+    <html lang="en">
+      <body className="antialiased">
+        {children}
+      </body>
+    </html>
   )
 }
 

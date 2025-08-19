@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import UserContext from "@/context/user.context";
+import { useMobile } from "@/hooks/useMobile";
 import { useSocket } from "@/hooks/useSocket";
 import { apiGet } from "@/lib/apiResponse";
 import { decryptMessage } from "@/lib/encryption";
@@ -28,6 +29,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import toast from "react-hot-toast";
@@ -68,9 +70,13 @@ const ChatPage = ({ params }: { params: Promise<{ chatId: string }> }) => {
 
   const [chatDetails, setChatDetails] = useState<ChatDetails>();
 
+  const isMobile = useMobile()
+
   const [message, setMessage] = useState("");
 
   const [Messages, setMessages] = useState<ExtendedMessagePayload[]>([]);
+
+  const bottomRef = useRef<HTMLDivElement>(null)
 
   const getChat = useCallback(async () => {
     try {
@@ -134,6 +140,12 @@ const ChatPage = ({ params }: { params: Promise<{ chatId: string }> }) => {
     };
   }, [socket, userId, isConnected, socketId]);
 
+  useEffect(() => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [Messages]);
+
   const sendMessage = () => {
     if (!message.trim() || !receiver || !socket) return;
 
@@ -180,14 +192,14 @@ const ChatPage = ({ params }: { params: Promise<{ chatId: string }> }) => {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-w-0 h-screen">
+    <div className="flex-1 flex flex-col h-screen relative">
       {/* Chat Header */}
       <div className="bg-white border-b border-gray-200 px-3 py-2 sm:px-4 sm:py-4 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
             {/* Back button for mobile */}
             <Link href={"/chat"}>
-              <Button variant="ghost" size="sm" className="md:hidden p-1">
+              <Button variant="ghost" size="sm" className="md:hidden p-1 cursor-pointer">
               <ArrowLeft className="h-4 w-4" />
             </Button>
             </Link>
@@ -221,23 +233,11 @@ const ChatPage = ({ params }: { params: Promise<{ chatId: string }> }) => {
               </p>
             </div>
           </div>
-          
-          {/* <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
-            <Button variant="ghost" size="sm" className="p-1 sm:p-2">
-              <Phone className="h-3 w-3 sm:h-4 sm:w-4" />
-            </Button>
-            <Button variant="ghost" size="sm" className="p-1 sm:p-2">
-              <Video className="h-3 w-3 sm:h-4 sm:w-4" />
-            </Button>
-            <Button variant="ghost" size="sm" className="p-1 sm:p-2">
-              <MoreVertical className="h-3 w-3 sm:h-4 sm:w-4" />
-            </Button>
-          </div> */}
         </div>
       </div>
 
       {/* Messages */}
-      <ScrollArea className="flex-1 px-2 sm:px-4 py-2 overflow-y-auto">
+        <ScrollArea className="flex-1 px-2 sm:px-4 py-2 overflow-y-auto pb-16 md:pb-20">
         <div className="space-y-2 sm:space-y-4">
           {Messages.map((msg, i) => (
             <div
@@ -268,10 +268,11 @@ const ChatPage = ({ params }: { params: Promise<{ chatId: string }> }) => {
             </div>
           ))}
         </div>
+        <div ref={bottomRef}/>
       </ScrollArea>
 
       {/* Message Input */}
-      <div className="bg-white border-t border-gray-200 px-2 sm:px-4 py-2 sm:py-4 flex-shrink-0">
+      <div className={`bg-white border-t h-14 md:h-18 box-border border-gray-200 px-2 sm:px-4 py-1 sm:py-4 flex-shrink-0 fixed bottom-0 right-0 ${isMobile ? "w-full" : "w-3/4"}`}>
         <div className="flex items-center space-x-1 sm:space-x-2">
           <Button variant="ghost" size="sm" className="p-1 sm:p-2">
             <Paperclip className="h-3 w-3 sm:h-4 sm:w-4" />

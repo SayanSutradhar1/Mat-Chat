@@ -4,13 +4,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import UserContext from "@/context/user.context";
-import { useMobile } from "@/hooks/useMobile";
 import { useSocket } from "@/hooks/useSocket";
 import { apiGet } from "@/lib/apiResponse";
 import { Users } from "lucide-react";
 import mongoose from "mongoose";
-import { redirect } from "next/navigation";
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
 interface User {
   userId: mongoose.Schema.Types.ObjectId;
@@ -24,12 +22,6 @@ const Page = () => {
   const context = useContext(UserContext);
 
   const { socket } = useSocket();
-
-  const isMobile = useMobile()
-
-  if(!isMobile){
-    redirect("/not-found")
-  }
 
   const userId = context?.user?.userId;
   const name = context?.user?.name;

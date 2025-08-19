@@ -8,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMobile } from "@/hooks/useMobile";
 import { apiGet } from "@/lib/apiResponse";
 import { decryptMessage } from "@/lib/encryption";
+import { APP_NAME } from "@/lib/utils";
 import { Bell, Newspaper, Search, User, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -76,11 +77,11 @@ export default function ChatLayout({ children }: { children: ReactNode }) {
         <div className="bg-white border-b border-gray-200 p-4">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-              Connectify
+              {APP_NAME}
             </h1>
             <div className="flex items-center space-x-2">
               <Link href="/notifications">
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" className="cursor-pointer">
                   <Bell className="h-4 w-4" />
                 </Button>
               </Link>
@@ -175,15 +176,15 @@ export default function ChatLayout({ children }: { children: ReactNode }) {
         {/* Header */}
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-xl font-bold text-gray-800">Connectify</h1>
+            <h1 className="text-xl font-bold text-gray-800">{APP_NAME}</h1>
             <div className="flex items-center space-x-2">
               <Link href={"/feed"}>
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" className="cursor-pointer">
                   <Newspaper className="h-4 w-4" />
                 </Button>
               </Link>
               <Link href="/profile">
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" className="cursor-pointer">
                   <User className="h-4 w-4" />
                 </Button>
               </Link>
