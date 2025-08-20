@@ -52,7 +52,6 @@ const SocketProvider = ({ children }: { children: ReactNode }) => {
       console.error("Socket connection error:", error.message);
       setIsConnected(false);
     };
-
     // Add event listeners
     socket.on("connect", handleConnect);
     socket.on("disconnect", handleDisconnect);

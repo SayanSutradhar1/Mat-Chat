@@ -2,7 +2,7 @@ import { hash } from "bcryptjs";
 import mongoose, { Document } from "mongoose";
 
 export interface IUserCredentials extends Document {
-  // username?: string;
+  username?: string;
   userId: mongoose.Schema.Types.ObjectId;
   name: string;
   email: string;
@@ -29,7 +29,7 @@ export interface IUserHandle extends Document {
 
 const userCredentialsSchema = new mongoose.Schema<IUserCredentials>(
   {
-    // username: { type: String, unique: true, },
+    username: { type: String, unique: true, },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "UserDetails",

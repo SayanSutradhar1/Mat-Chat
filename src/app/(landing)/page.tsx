@@ -3,8 +3,18 @@ import "../globals.css";
 import { APP_NAME } from "@/lib/utils";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
 
-export default function LandingPage() {
+export default async function LandingPage() {
+
+  const session = await auth();
+
+  
+  if(session?.user?.email){
+    redirect("/feed")
+  }
+
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-gray-50 text-center px-6 box-border mt-20">
       {/* Title */}

@@ -146,6 +146,16 @@ export default function Profile() {
             <DialogTitle>Update Profile Picture</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            {
+              user?.avatar && !profilePicture && (
+                <Image
+                  width={1000}
+                  height={1000}
+                  src={user.avatar}
+                  alt="Current Profile"
+                  className="w-full h-64 rounded-lg object-cover mb-4"/>
+              )
+            }
             <div>
               <Label htmlFor="file-upload">Image</Label>
               <Input
@@ -153,12 +163,13 @@ export default function Profile() {
                 type="file"
                 accept="image/*"
                 onChange={handlePictureChange}
+                className="cursor-pointer"
               />
               {profilePicture && (
                 <div className="mt-2">
                   <Image
-                  width={1000}
-                  height={1000}
+                    width={1000}
+                    height={1000}
                     src={URL.createObjectURL(profilePicture)}
                     alt="Preview"
                     className="w-full h-48 rounded-lg object-cover"
@@ -174,12 +185,13 @@ export default function Profile() {
                 onClick={() => {
                   setProfilePicture(null);
                 }}
+                className="cursor-pointer"
               >
                 Cancel
               </Button>
             </DialogClose>
             <Button
-              className="bg-purple-500 hover:bg-purple-600"
+              className="bg-purple-500 hover:bg-purple-600 cursor-pointer"
               onClick={handleUpdateProfilePicture}
               disabled={!profilePicture}
             >
@@ -209,22 +221,15 @@ export default function Profile() {
             <div className="flex flex-col sm:flex-col md:flex-row md:items-end md:justify-between -mt-20 relative">
               <div className="flex flex-col md:flex-row md:items-end space-y-4 md:space-y-0 md:space-x-6">
                 <div className="relative">
-                  <Avatar className="h-24 w-24 sm:h-32 sm:w-32 border-4 border-white shadow-lg">
+                  <Avatar className="h-32 w-32 sm:h-40 sm:w-40 border-4 border-white shadow-lg cursor-pointer" onClick={() => {
+                      setDialogOpen(true);
+                    }}>
                     <AvatarImage src={user?.avatar} className="object-cover" />
                     <AvatarFallback className="text-2xl">{user?.name[0]}</AvatarFallback>
                   </Avatar>
-                  <Button
-                    size="sm"
-                    className="absolute bottom-2 right-2 h-8 w-8 rounded-full p-0 bg-purple-500 hover:bg-purple-600"
-                    onClick={() => {
-                      setDialogOpen(true);
-                    }}
-                  >
-                    <Camera className="h-4 w-4" />
-                  </Button>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2 flex-1">
                   <div className="flex items-center space-x-2">
                     <h1 className="text-2xl font-bold text-gray-900">
                       {user?.name}
@@ -236,45 +241,21 @@ export default function Profile() {
                       Online
                     </Badge>
                   </div>
-                  <p className="text-gray-600">{user?.name.toLowerCase() ?? "@johndoe"}</p>
                   <div className="flex items-center space-x-4 text-sm text-gray-500">
+                    <p className="text-gray-600">@{user?.username}</p>
                     <div className="flex items-center space-x-1">
                       <MapPin className="h-4 w-4" />
-                      <span>San Francisco, CA</span>
+                      <span>{user?.location || "India"}</span>
                     </div>
                     <div className="flex items-center space-x-1">
                       <Calendar className="h-4 w-4" />
-                      <span>Joined March 2023</span>
+                      <span>{}</span>
                     </div>
                   </div>
                 </div>
               </div>
 
               <div className="flex flex-wrap items-center gap-2 mt-4 md:mt-0">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 sm:flex-none"
-                >
-                  <MessageCircle className="h-4 w-4 mr-2" />
-                  <span className="hidden sm:inline">Message</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 sm:flex-none"
-                >
-                  <Phone className="h-4 w-4 mr-2" />
-                  <span className="hidden sm:inline">Call</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 sm:flex-none"
-                >
-                  <Video className="h-4 w-4 mr-2" />
-                  <span className="hidden sm:inline">Video</span>
-                </Button>
                 <Button variant="ghost" size="sm">
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
@@ -284,8 +265,7 @@ export default function Profile() {
             {/* Bio */}
             <div className="mt-6">
               <p className="text-gray-700 mb-4">
-                Full-stack developer passionate about creating amazing user
-                experiences. Love to travel, photography, and good coffee ☕
+                {user?.bio || `Hey there 👋 I'm ${user?.name}, a full-stack developer passionate about building amazing web applications. Let's connect!`}
               </p>
               <div className="flex items-center space-x-1 text-purple-600">
                 <LinkIcon className="h-4 w-4" />

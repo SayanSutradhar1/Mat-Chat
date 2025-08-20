@@ -23,7 +23,9 @@ import {
   Smile
 } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
+  memo,
   use,
   useCallback,
   useContext,
@@ -63,8 +65,12 @@ interface ExtendedMessagePayload extends MessagePayload {
 const ChatPage = ({ params }: { params: Promise<{ chatId: string }> }) => {
   const { chatId } = use(params);
 
+  const pathname = usePathname()
+
   const context = useContext(UserContext);
   const { socket, isConnected, socketId } = useSocket();
+
+  const [isOnline, setIsOnline] = useState(false);
 
   const userId = context?.user?.userId ?? "";
 
@@ -97,7 +103,6 @@ const ChatPage = ({ params }: { params: Promise<{ chatId: string }> }) => {
             status: "read" as MessageStatus, // Assume old messages are read
           }))
         );
-        toast.success("Messages retrieved successfully");
       } else {
         toast.error("Failed to retrieve chats");
       }
@@ -176,20 +181,24 @@ const ChatPage = ({ params }: { params: Promise<{ chatId: string }> }) => {
   };
 
   // Status icon component
-  const StatusIcon = ({ status }: { status: MessageStatus }) => {
-    const iconClass = "h-3 w-3 sm:h-4 sm:w-4";
-    
-    switch (status) {
-      case "pending":
-        return <Clock className={`${iconClass} text-gray-400 animate-pulse`} />;
-      case "sent":
-        return <Check className={`${iconClass} text-gray-400`} />;
-      case "read":
-        return <CheckCheck className={`${iconClass} text-blue-500`} />;
-      default:
-        return null;
-    }
-  };
+
+
+  useEffect(()=>{
+    if (!socket) return;
+
+    socket.emit("active_users", userId);
+
+    const handleActiveUsers = (users: string[]) => {
+      setIsOnline(users.includes(receiver ?? ""));
+    };
+
+    // Listen for active users event
+    socket.on("active_users", handleActiveUsers);
+
+    return () => {
+      socket.off("active_users", handleActiveUsers);
+    };
+  },[socket,userId, receiver]);
 
   return (
     <div className="flex-1 flex flex-col h-screen relative">
@@ -229,7 +238,8 @@ const ChatPage = ({ params }: { params: Promise<{ chatId: string }> }) => {
                       ?.name}
               </h2>
               <p className="text-xs sm:text-sm text-gray-500 truncate">
-                {`Send Message to ${chatDetails?.groupName || chatDetails?.participants.find(p=>p._id!==userId)?.name.split(" ")[0]}`}
+                {/* {`Send Message to ${chatDetails?.groupName || chatDetails?.participants.find(p=>p._id!==userId)?.name.split(" ")[0]}`} */}
+                {isOnline ? "Online" : "Offline"}
               </p>
             </div>
           </div>
@@ -237,7 +247,7 @@ const ChatPage = ({ params }: { params: Promise<{ chatId: string }> }) => {
       </div>
 
       {/* Messages */}
-        <ScrollArea className="flex-1 px-2 sm:px-4 py-2 overflow-y-auto pb-16 md:pb-20">
+        <ScrollArea className="flex-1 px-2 sm:px-4 py-2 overflow-y-auto pb-18 md:pb-20">
         <div className="space-y-2 sm:space-y-4">
           {Messages.map((msg, i) => (
             <div
@@ -258,11 +268,11 @@ const ChatPage = ({ params }: { params: Promise<{ chatId: string }> }) => {
                   >
                     {msg.timestamp}
                   </p>
-                  {msg.sender === userId && (
+                  {/* {msg.sender === userId && (
                     <div className="flex items-center ml-2">
                       <StatusIcon status={msg.status} />
                     </div>
-                  )}
+                  )} */}
                 </div>
               </div>
             </div>
@@ -272,7 +282,7 @@ const ChatPage = ({ params }: { params: Promise<{ chatId: string }> }) => {
       </ScrollArea>
 
       {/* Message Input */}
-      <div className={`bg-white border-t h-14 md:h-18 box-border border-gray-200 px-2 sm:px-4 py-1 sm:py-4 flex-shrink-0 fixed bottom-0 right-0 ${isMobile ? "w-full" : "w-3/4"}`}>
+      <div className={`bg-white border-t h-16 md:h-18 box-border border-gray-200 px-2 sm:px-4 py-2 sm:py-4 flex-shrink-0 fixed bottom-0 right-0 ${isMobile ? "w-full" : "w-3/4"} items-center`}>
         <div className="flex items-center space-x-1 sm:space-x-2">
           <Button variant="ghost" size="sm" className="p-1 sm:p-2">
             <Paperclip className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -315,4 +325,4 @@ const ChatPage = ({ params }: { params: Promise<{ chatId: string }> }) => {
   );
 };
 
-export default ChatPage;
+export default memo(ChatPage);

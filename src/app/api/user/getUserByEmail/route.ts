@@ -24,7 +24,7 @@ export async function GET() {
     }
     await connectDB();
 
-    const userCredentials = await UserCredentials.findOne({ email }).select("userId name");
+    const userCredentials = await UserCredentials.findOne({ email }).select("userId name username");
 
     if (!userCredentials) {
       return NextResponse.json<ApiResponse>(
@@ -54,7 +54,7 @@ export async function GET() {
       );
     }
 
-    const userHandle = await UserHandle.findOne({userId: userCredentials.userId}).select("following followers");
+    const userHandle = await UserHandle.findOne({userId: userCredentials.userId}).select("following followers posts");
 
     if (!userHandle) {
       return NextResponse.json<ApiResponse>(
@@ -81,10 +81,11 @@ export async function GET() {
         location: userDetails.location,
         following: userHandle?.following,
         followers: userHandle?.followers,
-        posts : []
+        posts : [],
+        username: userCredentials.username,
     }
 
-    // console.log(data);
+    console.log(data);
     
 
     return NextResponse.json<ApiResponse<typeof data>>(
