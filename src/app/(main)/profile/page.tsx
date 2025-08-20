@@ -28,15 +28,12 @@ import {
   Heart,
   LinkIcon,
   MapPin,
-  MessageCircle,
   MessageSquare,
   MoreHorizontal,
   Palette,
-  Phone,
   Settings,
   Share,
-  Shield,
-  Video
+  Shield
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";

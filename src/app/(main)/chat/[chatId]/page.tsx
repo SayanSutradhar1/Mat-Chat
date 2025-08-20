@@ -14,16 +14,12 @@ import { MessagePayload } from "@/lib/socket";
 import {
   ArrowLeft,
   Camera,
-  Check,
-  CheckCheck,
-  Clock,
   Mic,
   Paperclip,
   Send,
   Smile
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import {
   memo,
   use,
@@ -64,8 +60,6 @@ interface ExtendedMessagePayload extends MessagePayload {
 
 const ChatPage = ({ params }: { params: Promise<{ chatId: string }> }) => {
   const { chatId } = use(params);
-
-  const pathname = usePathname()
 
   const context = useContext(UserContext);
   const { socket, isConnected, socketId } = useSocket();
