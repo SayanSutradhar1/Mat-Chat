@@ -3,7 +3,7 @@
 import { Bell, Home, LogOut, MessageCircle, User } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../ui/button";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { useSocket } from "@/hooks/useSocket";
 import mongoose from "mongoose";
 import { apiGet } from "@/lib/apiResponse";
@@ -48,7 +48,6 @@ const DesktopSidebarLeft = () => {
   };
 
   useEffect(() => {
-    console.log(notifications);
     fetchNotifications();
   }, []);
 
@@ -114,7 +113,7 @@ const DesktopSidebarLeft = () => {
               Profile
             </Button>
           </Link>
-          <Button variant="ghost" className="w-full justify-start" onClick={handleLogOut}>
+          <Button variant="ghost" className="w-full justify-start cursor-pointer" onClick={handleLogOut}>
             <LogOut className="h-4 w-4 mr-3" />
             Log Out
           </Button>
@@ -160,4 +159,4 @@ const DesktopSidebarLeft = () => {
   );
 };
 
-export default DesktopSidebarLeft;
+export default memo(DesktopSidebarLeft);

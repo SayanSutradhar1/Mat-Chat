@@ -17,7 +17,7 @@ import {
   Send,
   Share,
 } from "lucide-react";
-import { useCallback, useContext, useEffect, useState } from "react";
+import { memo, useContext, useState } from "react";
 
 // --- Add these imports for Shadcn Dialog ---
 import {
@@ -29,12 +29,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import toast from "react-hot-toast";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
-import mongoose from "mongoose";
 import UserContext from "@/context/user.context";
+import mongoose from "mongoose";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 // --------------------------------------------
+
+import useSWR from "swr";
 
 interface Post {
   postId : string
@@ -51,11 +53,13 @@ interface Post {
   createdAt? : Date
 }
 
+const postsFetcher = (apiPath:string)=> apiGet<Post[]>(apiPath);
 
 
-export default function Feed() {
+
+function Feed() {
   const router = useRouter()
-  const [Posts, setPosts] = useState<Post[]>();
+  // const [Posts, setPosts] = useState<Post[]>();
   const [searchQuery, setSearchQuery] = useState("");
   const context = useContext(UserContext)
 
@@ -67,17 +71,10 @@ export default function Feed() {
   const [file, setFile] = useState<File | null>(null);
   const [modalPreview, setModalPreview] = useState<string | null>(null);
 
-  const fetchPosts = useCallback(async () => {
-    const response = await apiGet<Post[]>("/api/post/getPosts");
-
-    if (response.success) {
-      setPosts(response.data);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchPosts();
-  }, [fetchPosts]);
+  const {data : PostDataResponse} = useSWR("/api/post/getPosts",postsFetcher,{
+    refreshInterval : 2*1000*60,
+    revalidateIfStale : false
+  })
 
   // --- Modal handlers ---
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -223,7 +220,7 @@ export default function Feed() {
 
         {/* Posts List */}
         <div className="space-y-4 py-2">
-          {Posts?.map((post, i) => (
+          {PostDataResponse?.data?.map((post, i) => (
             <Card key={i} className="rounded-xl border shadow-sm bg-white">
               <CardContent className="p-4">
                 {/* Post Header */}
@@ -291,7 +288,7 @@ export default function Feed() {
               </CardContent>
             </Card>
           ))}
-          {(!Posts || Posts.length === 0) && (
+          {(!PostDataResponse?.data || PostDataResponse.data.length === 0) && (
             <div className="text-center text-gray-400 py-8">
               No posts found.
             </div>
@@ -303,3 +300,5 @@ export default function Feed() {
     </div>
   );
 }
+
+export default memo(Feed)

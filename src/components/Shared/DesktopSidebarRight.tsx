@@ -4,7 +4,7 @@ import { Users } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
-import { useContext, useEffect, useState } from "react";
+import { memo, useContext, useEffect, useState } from "react";
 import { apiGet } from "@/lib/apiResponse";
 import mongoose from "mongoose";
 import UserContext from "@/context/user.context";
@@ -136,4 +136,4 @@ const DesktopSidebarRight = () => {
   );
 };
 
-export default DesktopSidebarRight;
+export default memo(DesktopSidebarRight);

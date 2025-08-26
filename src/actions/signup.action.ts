@@ -23,6 +23,7 @@ export async function signup(
       name,
       email: signupPayload.email,
       password: signupPayload.password,
+      username : signupPayload.username
     });
 
     const newUserDetails = await UserDetails.create({

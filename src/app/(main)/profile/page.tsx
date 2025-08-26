@@ -1,10 +1,11 @@
 "use client";
 
+import { logout } from "@/actions/logout.action";
 import BottomNavbar from "@/components/Shared/BottomNavbar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogClose,
@@ -15,38 +16,46 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserContext from "@/context/user.context";
 import { Post } from "@/interfaces/user.interface";
 import { apiGet, apiPost } from "@/lib/apiResponse";
+import { formatDate } from "@/lib/dateConvert";
 import {
   ArrowLeft,
-  Bell,
-  Calendar,
+  Cake,
   Camera,
   Heart,
-  LinkIcon,
+  LogOut,
   MapPin,
   MessageSquare,
   MoreHorizontal,
-  Palette,
-  Settings,
-  Share,
-  Shield
+  Share
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import toast from "react-hot-toast";
 
 export default function Profile() {
   const [activeTab, setActiveTab] = useState("posts");
 
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [profilePictureDialogOpen, setProfilePictureDialogOpen] =
+    useState(false);
+  const [coverPhotoDialogOpen, setCoverPhotoDialogOpen] = useState(false);
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
+  const [coverPhoto, setCoverPhoto] = useState<File | null>(null);
 
   const context = useContext(UserContext);
+  const router = useRouter()
 
   const user = context?.user;
   const setUser = context?.setUser;
@@ -56,16 +65,13 @@ export default function Profile() {
       const response = await apiGet("/api/user/getPostsByUserId");
 
       if (response.success) {
-        toast.success("Posts fetched successfully");
         if (setUser && user) {
           setUser({
             ...user,
             posts: response.data as Post[],
           });
         }
-      } else {
-        toast.error(response.message || "Failed to fetch posts");
-      }
+      } 
     } catch (error) {
       console.log(error);
       toast.error(
@@ -74,10 +80,13 @@ export default function Profile() {
     }
   }, [user]);
 
-  const handlePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePictureChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    changeFile: Dispatch<SetStateAction<File | null>>
+  ) => {
     const file = e.target.files?.[0];
     if (file) {
-      setProfilePicture(file);
+      changeFile(file);
     }
   };
 
@@ -106,9 +115,55 @@ export default function Profile() {
     } finally {
       toast.dismiss(toastId);
       setProfilePicture(null);
-      setDialogOpen(false)
+      setProfilePictureDialogOpen(false);
     }
   };
+
+  const handleUpdateCoverPhoto = async () => {
+    if (!coverPhoto) {
+      toast.error("No Picture is Selected");
+      return;
+    }
+
+    const toastId = toast.loading("Uploading Cover Image");
+    try {
+      const formData = new FormData();
+      formData.append("picture", coverPhoto);
+      const response = await apiPost("/api/user/updateCoverPhoto", formData);
+
+      if (response.success) {
+        toast.success("Cover Photo Updated Successfully");
+      } else {
+        toast.error(response.message);
+      }
+    } catch (error) {
+      toast.error((error as Error).message);
+    } finally {
+      toast.dismiss(toastId);
+      setCoverPhoto(null);
+      setCoverPhotoDialogOpen(false);
+    }
+  };
+
+  const handleLogOut = async()=>{
+    const toastId = toast.loading("Logging out...");
+    try {
+      const response = await logout()
+      console.log(response);
+      
+      if(response.success) {
+        toast.success("Logged out successfully");
+      } else {
+        toast.error("Failed to log out");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("An error occurred while logging out");
+    } finally {
+      toast.dismiss(toastId);
+      router.push("/login");
+    }
+  }
 
   useEffect(() => {
     if (user?.posts && user.posts.length > 0) {
@@ -118,7 +173,7 @@ export default function Profile() {
   }, [user]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 p-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
@@ -130,36 +185,38 @@ export default function Profile() {
             </Link>
             <h1 className="text-xl font-semibold">Profile</h1>
           </div>
-          <Button variant="ghost" size="sm">
-            <Settings className="h-4 w-4" />
+          <Button variant="ghost" size="sm" className="cursor-pointer" onClick={handleLogOut}>
+            <LogOut className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
-      {/* --- Modal for Creating Post --- */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      {/* Profile Picture Update Dialog */}
+      <Dialog
+        open={profilePictureDialogOpen}
+        onOpenChange={setProfilePictureDialogOpen}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Update Profile Picture</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            {
-              user?.avatar && !profilePicture && (
-                <Image
-                  width={1000}
-                  height={1000}
-                  src={user.avatar}
-                  alt="Current Profile"
-                  className="w-full h-64 rounded-lg object-cover mb-4"/>
-              )
-            }
+            {user?.avatar && !profilePicture && (
+              <Image
+                width={1000}
+                height={1000}
+                src={user.avatar}
+                alt="Current Profile"
+                className="w-full h-64 rounded-lg object-cover mb-4"
+              />
+            )}
             <div>
               <Label htmlFor="file-upload">Image</Label>
               <Input
                 id="file-upload"
                 type="file"
                 accept="image/*"
-                onChange={handlePictureChange}
+                onChange={(e) => handlePictureChange(e, setProfilePicture)}
                 className="cursor-pointer"
               />
               {profilePicture && (
@@ -198,16 +255,91 @@ export default function Profile() {
         </DialogContent>
       </Dialog>
 
+      {/* Cover Photo Update Dialog */}
+      <Dialog
+        open={coverPhotoDialogOpen}
+        onOpenChange={setCoverPhotoDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Update Cover Photo</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {user?.coverPhoto && !coverPhoto && (
+              <Image
+                width={1000}
+                height={1000}
+                src={user.coverPhoto}
+                alt="Current Profile"
+                className="w-full h-64 rounded-lg object-cover mb-4"
+              />
+            )}
+            <div>
+              <Label htmlFor="file-upload">Image</Label>
+              <Input
+                id="file-upload"
+                type="file"
+                accept="image/*"
+                onChange={(e) => handlePictureChange(e, setCoverPhoto)}
+                className="cursor-pointer"
+              />
+              {coverPhoto && (
+                <div className="mt-2">
+                  <Image
+                    width={1000}
+                    height={1000}
+                    src={URL.createObjectURL(coverPhoto)}
+                    alt="Preview"
+                    className="w-full h-48 rounded-lg object-cover"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setCoverPhoto(null);
+                }}
+                className="cursor-pointer"
+              >
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button
+              className="bg-purple-500 hover:bg-purple-600 cursor-pointer"
+              onClick={handleUpdateCoverPhoto}
+              disabled={!coverPhoto}
+            >
+              Post
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <div className="max-w-4xl mx-auto p-2 sm:p-4 space-y-6 pb-20 lg:pb-6">
         {/* Profile Header */}
         <Card>
           <CardContent className="p-6">
             {/* Cover Photo */}
+
             <div className="relative h-48 bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 rounded-lg mb-6">
+              {user?.coverPhoto && (
+                <Image
+                  src={user.coverPhoto}
+                  height={1000}
+                  width={1000}
+                  alt="Cover"
+                  className="absolute top-0 h-full w-full opacity-90 object-cover rounded-lg"
+                />
+              )}
               <Button
                 variant="secondary"
                 size="sm"
                 className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm border-white/30"
+                onClick={() => setCoverPhotoDialogOpen(true)}
               >
                 <Camera className="h-4 w-4 mr-2" />
                 Edit Cover
@@ -218,11 +350,16 @@ export default function Profile() {
             <div className="flex flex-col sm:flex-col md:flex-row md:items-end md:justify-between -mt-20 relative">
               <div className="flex flex-col md:flex-row md:items-end space-y-4 md:space-y-0 md:space-x-6">
                 <div className="relative">
-                  <Avatar className="h-32 w-32 sm:h-40 sm:w-40 border-4 border-white shadow-lg cursor-pointer" onClick={() => {
-                      setDialogOpen(true);
-                    }}>
+                  <Avatar
+                    className="h-32 w-32 sm:h-40 sm:w-40 border-4 border-white shadow-lg cursor-pointer relative z-30"
+                    onClick={() => {
+                      setProfilePictureDialogOpen(true);
+                    }}
+                  >
                     <AvatarImage src={user?.avatar} className="object-cover" />
-                    <AvatarFallback className="text-2xl">{user?.name[0]}</AvatarFallback>
+                    <AvatarFallback className="text-2xl">
+                      {user?.name[0]}
+                    </AvatarFallback>
                   </Avatar>
                 </div>
 
@@ -245,8 +382,11 @@ export default function Profile() {
                       <span>{user?.location || "India"}</span>
                     </div>
                     <div className="flex items-center space-x-1">
-                      <Calendar className="h-4 w-4" />
-                      <span>{}</span>
+                      <Cake className="h-4 w-4" />
+                      <span>
+                        {user?.dateOfBirth &&
+                          formatDate(user?.dateOfBirth, "date")}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -262,14 +402,9 @@ export default function Profile() {
             {/* Bio */}
             <div className="mt-6">
               <p className="text-gray-700 mb-4">
-                {user?.bio || `Hey there 👋 I'm ${user?.name}, a full-stack developer passionate about building amazing web applications. Let's connect!`}
+                {user?.bio ||
+                  `Hey there 👋 I'm ${user?.name}, a full-stack developer passionate about building amazing web applications. Let's connect!`}
               </p>
-              <div className="flex items-center space-x-1 text-purple-600">
-                <LinkIcon className="h-4 w-4" />
-                <a href="#" className="hover:underline">
-                  johndoe.dev
-                </a>
-              </div>
             </div>
 
             {/* Stats */}
@@ -352,27 +487,39 @@ export default function Profile() {
                 </CardContent>
               </Card>
             ))}
+            {user?.posts?.length === 0 && (
+              <div className="text-center text-2xl text-gray-500 w-full py-10">
+                No Posts
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="media" className="space-y-4">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div
-                  key={i}
-                  className="aspect-square bg-gray-200 rounded-lg overflow-hidden"
-                >
-                  <img
-                    src={`/placeholder.svg?height=200&width=200`}
-                    alt={`Media ${i}`}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
-                  />
-                </div>
-              ))}
+              {user?.posts &&
+                user.posts.map((user, i) => (
+                  <div
+                    key={i}
+                    className="aspect-square bg-gray-200 rounded-lg overflow-hidden"
+                  >
+                    <img
+                      src={user.file ?? `/placeholder.svg?height=200&width=200`}
+                      alt={`Media ${i}`}
+                      className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
+                      loading="lazy"
+                    />
+                  </div>
+                ))}
             </div>
+            {user?.posts?.length === 0 && (
+                <div className="text-center text-2xl text-gray-500 w-full py-6">
+                  No Files
+                </div>
+              )}
           </TabsContent>
 
           <TabsContent value="about" className="space-y-4">
-            <Card>
+            {/* <Card>
               <CardHeader>
                 <CardTitle>About</CardTitle>
               </CardHeader>
@@ -416,11 +563,14 @@ export default function Profile() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}
+            <div className="text-center text-2xl text-gray-500 w-full py-10">
+              Under Construction
+            </div>
           </TabsContent>
 
           <TabsContent value="settings" className="space-y-4">
-            <div className="grid gap-4">
+            {/* <div className="grid gap-4">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
@@ -519,12 +669,15 @@ export default function Profile() {
                   </div>
                 </CardContent>
               </Card>
+            </div> */}
+            <div className="text-center text-2xl text-gray-500 w-full py-10">
+              Under Construction
             </div>
           </TabsContent>
         </Tabs>
       </div>
       {/* Mobile Bottom Navigation */}
-      <BottomNavbar/>
+      <BottomNavbar />
     </div>
   );
 }

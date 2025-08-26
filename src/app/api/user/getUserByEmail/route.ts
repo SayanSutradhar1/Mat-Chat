@@ -24,7 +24,7 @@ export async function GET() {
     }
     await connectDB();
 
-    const userCredentials = await UserCredentials.findOne({ email }).select("userId name username");
+    const userCredentials = await UserCredentials.findOne({ email }).select("userId name username createdAt");
 
     if (!userCredentials) {
       return NextResponse.json<ApiResponse>(
@@ -39,7 +39,7 @@ export async function GET() {
       );
     }
 
-    const userDetails = await UserDetails.findById(userCredentials.userId).select("bio avatar dateOfBirth location");
+    const userDetails = await UserDetails.findById(userCredentials.userId).select("bio avatar coverPhoto dateOfBirth location");
 
     if (!userDetails) {
       return NextResponse.json<ApiResponse>(
@@ -69,6 +69,9 @@ export async function GET() {
       );
     }
 
+    console.log(userDetails.coverPhoto);
+    
+
     // console.log(userHandle);
     
 
@@ -77,16 +80,17 @@ export async function GET() {
         name: userCredentials.name,
         bio: userDetails.bio,
         avatar: userDetails.avatar,
+        coverPhoto : userDetails.coverPhoto,
         dateOfBirth: userDetails.dateOfBirth,
         location: userDetails.location,
         following: userHandle?.following,
         followers: userHandle?.followers,
         posts : [],
         username: userCredentials.username,
+        joinedAt : userCredentials.createdAt
     }
 
-    console.log(data);
-    
+
 
     return NextResponse.json<ApiResponse<typeof data>>(
       {

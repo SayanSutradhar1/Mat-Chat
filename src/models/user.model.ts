@@ -9,12 +9,14 @@ export interface IUserCredentials extends Document {
   password: string;
   otp?: string;
   isVerified: boolean;
+  createdAt : Date | string
 }
 
 export interface IUserDetails extends Document {
   name: string;
   bio?: string;
   avatar?: string;
+  coverPhoto? : string
   dateOfBirth?: Date;
   location?: string;
 }
@@ -50,6 +52,7 @@ const userDetailsSchema = new mongoose.Schema<IUserDetails>({
     required : true
   },
   bio: { type: String, default: "" },
+  coverPhoto : {type : String},
   avatar: { type: String, default: "" },
   dateOfBirth: { type: Date, default: null },
   location: { type: String, default: "" },

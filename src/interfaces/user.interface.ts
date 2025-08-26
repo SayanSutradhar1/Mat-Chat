@@ -6,11 +6,13 @@ export interface User {
   name: string;
   bio: string;
   avatar: string;
+  coverPhoto? : string
   dateOfBirth: Date | undefined;
   location: string;
   following: mongoose.Schema.Types.ObjectId[];
   followers: mongoose.Schema.Types.ObjectId[];
   posts?: Post[];
+  joinedAt? : string
 }
 
 export interface Post {

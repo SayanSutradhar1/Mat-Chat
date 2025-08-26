@@ -4,7 +4,7 @@ import { useDuration } from "@/hooks/useDuration";
 import { useSocket } from "@/hooks/useSocket";
 import { apiGet } from "@/lib/apiResponse";
 import mongoose from "mongoose";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface Notification {
   userId: mongoose.Schema.Types.ObjectId;
@@ -21,7 +21,7 @@ const Page = () => {
   const timeAgo = useDuration();
 
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     try {
       const response = await apiGet<Notification[]>(
         "/api/user/notification/getAllNotifications"
@@ -37,7 +37,7 @@ const Page = () => {
     } catch (error) {
       console.log(error);
     }
-  };
+  },[])
 
   useEffect(() => {
     console.log(notifications);

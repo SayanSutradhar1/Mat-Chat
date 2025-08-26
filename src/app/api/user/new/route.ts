@@ -52,7 +52,6 @@ export async function POST(req: NextRequest) {
         },
         {
           status: 400,
-          statusText: "User signup failed",
         }
       );
     }

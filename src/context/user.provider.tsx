@@ -6,7 +6,7 @@ import { apiGet } from "@/lib/apiResponse";
 import toast from "react-hot-toast";
 import { User } from "@/interfaces/user.interface";
 
-export const UserProvider = ({ children }: { children: ReactNode }) => {
+const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | undefined>();
 
   const getUser = useCallback(async () => {
@@ -42,3 +42,5 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     </UserContext.Provider>
   );
 };
+
+export default UserProvider
